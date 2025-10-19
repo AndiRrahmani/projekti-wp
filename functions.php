@@ -1,64 +1,70 @@
 <?php
-<?php
-// ...existing code...
-if ( ! defined( 'ABSPATH' ) ) exit;
-
-define( 'CDT_THEME_DIR', get_template_directory() );
-
-require_once CDT_THEME_DIR . '/inc/post-types.php';
-require_once CDT_THEME_DIR . '/inc/customizer.php';
-require_once CDT_THEME_DIR . '/inc/helpers.php';
-
-/* Theme setup */
-add_action( 'after_setup_theme', function(){
-    add_theme_support( 'title-tag' );
-    add_theme_support( 'post-thumbnails' );
-    add_image_size( 'car-hero', 1600, 900, true );
-    add_image_size( 'car-thumb', 600, 400, true );
-    add_theme_support( 'html5', array( 'search-form', 'gallery', 'caption' ) );
-    register_nav_menus( array(
-        'primary' => __( 'Primary Menu', 'car-dealer-pro' ),
-        'footer'  => __( 'Footer Menu', 'car-dealer-pro' ),
-    ) );
-});
-
-/* Enqueue styles (no JS) */
-add_action( 'wp_enqueue_scripts', function(){
-    wp_enqueue_style( 'car-dealer-style', get_template_directory_uri() . '/assets/css/main.css', array(), filemtime( CDT_THEME_DIR . '/assets/css/main.css' ) );
-    wp_enqueue_style( 'car-dealer-style-css', get_stylesheet_uri(), array(), filemtime( CDT_THEME_DIR . '/style.css' ) );
-});
-
-/* Register widgets area */
-add_action( 'widgets_init', function(){
-    register_sidebar( array(
-        'name' => __( 'Sidebar', 'car-dealer-pro' ),
-        'id' => 'sidebar-1',
-        'before_widget' => '<aside class="widget %2$s">',
-        'after_widget'  => '</aside>',
-        'before_title'  => '<h3 class="widget-title">',
-        'after_title'   => '</h3>',
-    ) );
-});
-
-/* Simple inquiry handler (server-side, secure) */
-add_action( 'admin_post_nopriv_cdt_inquiry', 'cdt_handle_inquiry' );
-add_action( 'admin_post_cdt_inquiry',        'cdt_handle_inquiry' );
-
-function cdt_handle_inquiry(){
-    if ( ! isset( $_POST['_cdt_nonce'] ) || ! wp_verify_nonce( wp_unslash($_POST['_cdt_nonce']), 'cdt_inquiry' ) ) {
-        wp_die( __( 'Security check failed', 'car-dealer-pro' ), 403 );
+// Minimal functions for Projekti Car Repair theme
+// Load centralized includes
+require_once get_template_directory() . '/inc/services.php';
+// Admin includes
+if ( is_admin() ) {
+    require_once get_template_directory() . '/inc/admin.php';
+}
+if ( ! function_exists( 'projekti_enqueue_assets' ) ) {
+    function projekti_enqueue_assets() {
+        // Load a clean system font stack (no external requests) and theme stylesheet
+        wp_enqueue_style( 'projekti-style', get_stylesheet_uri(), array(), '1.2' );
     }
-    $name    = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
-    $email   = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
-    $message = sanitize_textarea_field( wp_unslash( $_POST['message'] ?? '' ) );
-    $car_id  = absint( $_POST['car_id'] ?? 0 );
+    add_action( 'wp_enqueue_scripts', 'projekti_enqueue_assets' );
+}
 
-    $subject = sprintf( '[Inquiry] %s - %s', get_bloginfo( 'name' ), $car_id ? get_the_title( $car_id ) : 'General' );
-    $body = "Name: $name\nEmail: $email\n\nMessage:\n$message\n\nCar ID: $car_id\nSite: " . home_url();
+// Minimal theme supports
+add_theme_support( 'title-tag' );
 
-    $to = get_theme_mod( 'dealer_contact_email', get_option( 'admin_email' ) );
-    wp_mail( $to, wp_specialchars_decode( $subject ), $body, array( 'Content-Type: text/plain; charset=UTF-8' ) );
+// Additional supports: custom logo and menu
+add_theme_support( 'custom-logo' );
+register_nav_menus( array( 'primary' => __( 'Primary Menu', 'projekti-car-repair' ) ) );
 
-    wp_safe_redirect( wp_get_referer() ? wp_get_referer() . '#inquiry-sent' : home_url() );
-    exit;
+// Add wp_body_open compatibility
+if ( ! function_exists( 'wp_body_open' ) ) {
+    function wp_body_open() {
+        do_action( 'wp_body_open' );
+    }
+}
+
+// Handle the static contact form (no DB). Uses wp_mail and redirects back with a query flag.
+if ( ! function_exists( 'projekti_handle_contact_form' ) ) {
+    function projekti_handle_contact_form() {
+        if ( 'POST' === $_SERVER['REQUEST_METHOD'] && ! empty( $_POST['projekti_contact_nonce'] ) ) {
+            // Verify nonce
+            if ( ! function_exists( 'wp_verify_nonce' ) || ! wp_verify_nonce( $_POST['projekti_contact_nonce'], 'projekti_contact' ) ) {
+                return;
+            }
+
+            $name = isset( $_POST['name'] ) ? sanitize_text_field( wp_strip_all_tags( $_POST['name'] ) ) : '';
+            $email = isset( $_POST['email'] ) ? sanitize_email( wp_strip_all_tags( $_POST['email'] ) ) : '';
+            $message = isset( $_POST['message'] ) ? sanitize_textarea_field( $_POST['message'] ) : '';
+
+            $subject = 'Website Contact: ' . ( $name ? $name : 'Visitor' );
+            $body = "Name: " . $name . "\nEmail: " . $email . "\n\nMessage:\n" . $message;
+            $to = get_option( 'admin_email' );
+            $headers = array( 'Content-Type: text/plain; charset=UTF-8' );
+            if ( is_email( $email ) ) {
+                $headers[] = 'Reply-To: ' . $email;
+            }
+
+            // Attempt to send mail
+            $sent = false;
+            if ( function_exists( 'wp_mail' ) ) {
+                $sent = wp_mail( $to, $subject, $body, $headers );
+            }
+
+            // Redirect back with status in query string (no DB used)
+            $referer = wp_get_referer();
+            if ( ! $referer ) {
+                $referer = home_url();
+            }
+            $status = $sent ? 'success' : 'fail';
+            $redirect = add_query_arg( 'projekti_contact', $status, $referer );
+            wp_safe_redirect( $redirect );
+            exit;
+        }
+    }
+    add_action( 'init', 'projekti_handle_contact_form' );
 }

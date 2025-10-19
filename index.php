@@ -1,105 +1,100 @@
 <?php
-<?php
-// ...existing code...
+// Simple single-file front page for Projekti Car Repair theme
 get_header();
+
+// Get services and packages from centralized include (options or defaults)
+$services = function_exists( 'projekti_get_services' ) ? projekti_get_services() : array();
+$packages = function_exists( 'projekti_get_packages' ) ? projekti_get_packages() : array();
+
+// Show a compact subset on the homepage and link to full pages
+$services_preview = array_slice( $services, 0, 4 );
+$packages_preview = array_slice( $packages, 0, 3 );
+// page links if available
+$services_page = get_page_by_path( 'services' );
+$pricing_page = get_page_by_path( 'pricing' );
+$services_link = $services_page ? get_permalink( $services_page ) : '#services';
+$pricing_link = $pricing_page ? get_permalink( $pricing_page ) : '#pricing';
+
 ?>
-<div class="container">
-    <section class="hero">
-        <div class="lead">
-            <h1><?php bloginfo( 'name' ); ?></h1>
-            <nav>
-                <?php wp_nav_menu( array( 'theme_location' => 'primary', 'container' => false, 'menu_class' => '' ) ); ?>
-            </nav>
-        </div>
-        <form method="get" class="search" role="search">
-            <input name="s" type="text" placeholder="<?php esc_attr_e( 'Search cars, keywords...', 'car-dealer-pro' ); ?>" value="<?php echo esc_attr( get_search_query() ); ?>">
-            <?php
-            // Make filter selects from taxonomies
-            $makes = get_terms( array( 'taxonomy' => 'make', 'hide_empty' => true ) );
-            if ( $makes && ! is_wp_error( $makes ) ) {
-                echo '<select name="make"><option value="">' . esc_html__( 'All makes', 'car-dealer-pro' ) . '</option>';
-                $sel = sanitize_text_field( wp_unslash( $_GET['make'] ?? '' ) );
-                foreach ( $makes as $m ) {
-                    printf( '<option value="%s"%s>%s</option>', esc_attr( $m->slug ), selected( $sel, $m->slug, false ), esc_html( $m->name ) );
-                }
-                echo '</select>';
-            }
-            ?>
-            <input type="number" name="price_min" placeholder="<?php esc_attr_e( 'Min price', 'car-dealer-pro' ); ?>" value="<?php echo esc_attr( $_GET['price_min'] ?? '' ); ?>">
-            <input type="number" name="price_max" placeholder="<?php esc_attr_e( 'Max price', 'car-dealer-pro' ); ?>" value="<?php echo esc_attr( $_GET['price_max'] ?? '' ); ?>">
-            <button class="btn btn-primary" type="submit"><?php _e( 'Filter', 'car-dealer-pro' ); ?></button>
-        </form>
-    </section>
 
-    <div class="content-row">
-        <main>
-            <?php
-            // Build query for cars
-            $paged = max( 1, get_query_var( 'paged' ) );
-            $args = array(
-                'post_type' => 'car',
-                'post_status' => 'publish',
-                'posts_per_page' => 12,
-                'paged' => $paged,
-            );
-
-            // tax_query
-            $tax_query = array();
-            if ( ! empty( $_GET['make'] ) ) {
-                $tax_query[] = array(
-                    'taxonomy' => 'make',
-                    'field' => 'slug',
-                    'terms' => sanitize_text_field( wp_unslash( $_GET['make'] ) ),
-                );
-            }
-            if ( $tax_query ) $args['tax_query'] = $tax_query;
-
-            // meta_query for price range
-            $meta_query = array( 'relation' => 'AND' );
-            if ( isset( $_GET['price_min'] ) && $_GET['price_min'] !== '' ) {
-                $meta_query[] = array( 'key' => 'price', 'value' => absint( $_GET['price_min'] ), 'compare' => '>=', 'type' => 'NUMERIC' );
-            }
-            if ( isset( $_GET['price_max'] ) && $_GET['price_max'] !== '' ) {
-                $meta_query[] = array( 'key' => 'price', 'value' => absint( $_GET['price_max'] ), 'compare' => '<=', 'type' => 'NUMERIC' );
-            }
-            if ( count( $meta_query ) > 1 ) $args['meta_query'] = $meta_query;
-
-            $loop = new WP_Query( $args );
-
-            if ( $loop->have_posts() ) : ?>
-                <div class="car-grid">
-                <?php while ( $loop->have_posts() ) : $loop->the_post();
-                    get_template_part( 'template-parts/content', 'car' );
-                endwhile; ?>
-                </div>
-
-                <nav class="pagination">
-                    <?php
-                    echo paginate_links( array(
-                        'total' => $loop->max_num_pages,
-                        'current' => $paged,
-                    ) );
-                    ?>
-                </nav>
-            <?php else: ?>
-                <p><?php _e( 'No cars found.', 'car-dealer-pro' ); ?></p>
-            <?php endif;
-            wp_reset_postdata();
-            ?>
-        </main>
-
-        <aside class="sidebar">
-            <?php dynamic_sidebar( 'sidebar-1' ); ?>
-            <h2><?php _e( 'Quick Contact', 'car-dealer-pro' ); ?></h2>
-            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-                <?php wp_nonce_field( 'cdt_inquiry', '_cdt_nonce' ); ?>
-                <input type="hidden" name="action" value="cdt_inquiry">
-                <label><?php _e( 'Name', 'car-dealer-pro' ); ?><input name="name" required></label>
-                <label><?php _e( 'Email', 'car-dealer-pro' ); ?><input name="email" type="email" required></label>
-                <label><?php _e( 'Message', 'car-dealer-pro' ); ?><textarea name="message" rows="4" required></textarea></label>
-                <button class="btn btn-primary" type="submit"><?php _e( 'Send', 'car-dealer-pro' ); ?></button>
-            </form>
-        </aside>
+  <section class="hero" role="region" aria-label="Introduction">
+    <div class="left">
+      <h1>Riparime Auto</h1>
+      <p>Riparime të besueshme, çmime transparente dhe teknikë të certifikuar — ne ju mbajmë në rrugë në siguri.</p>
+      <p style="margin-top:12px"><a class="cta" href="#contact">Rezervo takim</a></p>
     </div>
-</div>
-<?php get_footer(); ?>
+    <div class="right" aria-hidden="true">
+      <img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/car.svg' ); ?>" alt="Illustration of a car" style="width:320px;height:auto;display:block;min-height:120px">
+    </div>
+  </section>
+
+  <h2 id="services">Sherbimet tona</h2>
+  <div class="services" aria-label="Our services">
+    <?php foreach( $services_preview as $s ):
+        $slug = function_exists( 'projekti_make_slug' ) ? projekti_make_slug( $s['title'] ) : sanitize_title( $s['title'] );
+        $detail_link = add_query_arg( 'item', $slug, $services_link );
+    ?>
+      <article class="card" itemscope itemtype="http://schema.org/Service">
+        <h3 itemprop="name"><a href="<?php echo esc_url( $detail_link ); ?>"><?php echo esc_html( $s['title'] ); ?></a></h3>
+        <p itemprop="description" style="color:var(--muted-2)"><?php echo esc_html( $s['description'] ); ?></p>
+  <div style="margin-top:12px">Çmimi: <span class="price" itemprop="offers" itemscope itemtype="http://schema.org/Offer"><span itemprop="priceCurrency">EUR</span> <span itemprop="price">€<?php echo esc_html( $s['price'] ); ?></span></span></div>
+      </article>
+    <?php endforeach; ?>
+  </div>
+
+  <h2 id="pricing">Paketat e çmimeve</h2>
+  <div class="services">
+    <?php if ( ! empty( $packages_preview ) ): ?>
+      <?php foreach ( $packages_preview as $p ):
+        $pslug = function_exists( 'projekti_make_slug' ) ? projekti_make_slug( $p['title'] ) : sanitize_title( $p['title'] );
+        $pdetail = add_query_arg( 'item', $pslug, $pricing_link );
+      ?>
+        <div class="card">
+          <h3><a href="<?php echo esc_url( $pdetail ); ?>"><?php echo esc_html( $p['title'] ); ?></a></h3>
+          <p><?php echo esc_html( $p['description'] ); ?></p>
+          <div>Nga <span class="price">€<?php echo esc_html( $p['price'] ); ?></span></div>
+        </div>
+      <?php endforeach; ?>
+    <?php endif; ?>
+  </div>
+
+  <h2 id="contact">Kontakt & Rezervime</h2>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+    <div class="card" style="flex:1;min-width:280px">
+  <p>Telefononi ne <strong>(555) 012-345</strong> ose na vizitoni në 123 Repair Lane, Auto City.</p>
+  <p>Hap: e Hënë - e Premte 08:00 - 18:00</p>
+  <p style="color:var(--muted)">Shënim: Kjo temë nuk ruan të dhëna në bazën e të dhënave. Për të ndryshuar shërbimet ose çmimet, redaktoni <code>index.php</code> në dosjen e temës ose përdorni panelin e parametrave.</p>
+    </div>
+
+    <div class="card" style="flex:1;min-width:320px">
+      <?php if ( isset( $_GET['projekti_contact'] ) && 'success' === $_GET['projekti_contact'] ): ?>
+        <div style="padding:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#064e3b;border-radius:6px;margin-bottom:12px">Thanks — your message was sent successfully.</div>
+      <?php elseif ( isset( $_GET['projekti_contact'] ) && 'fail' === $_GET['projekti_contact'] ): ?>
+        <div style="padding:12px;background:#fff7f0;border:1px solid #ffd8b5;color:#7c2d12;border-radius:6px;margin-bottom:12px">Sorry — we couldn't send your message. Please try again or call us.</div>
+      <?php endif; ?>
+
+      <form method="post" action="<?php echo esc_url( home_url( '/' ) ); ?>">
+        <?php wp_nonce_field( 'projekti_contact', 'projekti_contact_nonce' ); ?>
+  <label for="name">Emri</label><br>
+        <input id="name" name="name" type="text" style="width:100%;padding:8px;margin:6px 0;border-radius:6px;border:1px solid #e6eef7" required>
+
+  <label for="email">Email</label><br>
+        <input id="email" name="email" type="email" style="width:100%;padding:8px;margin:6px 0;border-radius:6px;border:1px solid #e6eef7" required>
+
+  <label for="message">Mesazhi</label><br>
+        <textarea id="message" name="message" rows="4" style="width:100%;padding:8px;margin:6px 0;border-radius:6px;border:1px solid #e6eef7" required></textarea>
+
+        <div style="text-align:right;margin-top:8px">
+          <button type="submit" class="cta">Dërgo mesazh</button>
+        </div>
+      </form>
+    </div>
+
+    <div style="width:100%;display:flex;justify-content:center;margin-top:12px">
+      <!-- sample image loaded from theme assets -->
+      <img src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/car.svg' ); ?>" alt="car" style="width:320px;max-width:100%;height:auto;">
+    </div>
+  </div>
+
+<?php
+get_footer();
