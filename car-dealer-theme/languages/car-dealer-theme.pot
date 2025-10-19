@@ -1,0 +1,116 @@
+msgid "Car Dealer Theme"
+msgstr ""
+
+msgid "Welcome to the Car Dealer Theme"
+msgstr ""
+
+msgid "Find your dream car today!"
+msgstr ""
+
+msgid "Car Listings"
+msgstr ""
+
+msgid "No cars found."
+msgstr ""
+
+msgid "Search for cars"
+msgstr ""
+
+msgid "View Details"
+msgstr ""
+
+msgid "Price"
+msgstr ""
+
+msgid "Make"
+msgstr ""
+
+msgid "Model"
+msgstr ""
+
+msgid "Year"
+msgstr ""
+
+msgid "Mileage"
+msgstr ""
+
+msgid "Contact Us"
+msgstr ""
+
+msgid "Submit"
+msgstr ""
+
+msgid "Your Name"
+msgstr ""
+
+msgid "Your Email"
+msgstr ""
+
+msgid "Your Message"
+msgstr ""
+
+msgid "Thank you for your message!"
+msgstr ""
+
+msgid "Error: Please fill in all fields."
+msgstr ""
+
+msgid "Latest Cars"
+msgstr ""
+
+msgid "Read More"
+msgstr ""
+
+msgid "Related Cars"
+msgstr ""
+
+msgid "Car Details"
+msgstr ""
+
+msgid "Specifications"
+msgstr ""
+
+msgid "Reviews"
+msgstr ""
+
+msgid "Add Review"
+msgstr ""
+
+msgid "No reviews yet."
+msgstr ""
+
+msgid "Submit Review"
+msgstr ""
+
+msgid "Rating"
+msgstr ""
+
+msgid "Your Review"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Are you sure you want to delete this review?"
+msgstr ""
+
+msgid "Home"
+msgstr ""
+
+msgid "About Us"
+msgstr ""
+
+msgid "Services"
+msgstr ""
+
+msgid "Contact"
+msgstr ""
+
+msgid "Privacy Policy"
+msgstr ""
+
+msgid "Terms of Service"
+msgstr ""
