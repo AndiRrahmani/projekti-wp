@@ -1,0 +1,250 @@
+:root{
+  --transition: 220ms cubic-bezier(.2,.9,.2,1);
+  /* Color system */
+  --bg: #f6f8fb;
+  --surface: #ffffff;
+  --muted: #6b7280;
+  --text: #071320;
+  --accent: 30 111 216; /* use as <r> <g> <b> for easy alpha */
+  --accent-2: 11 79 138;
+  --danger: 232 73 29;
+  --glass: rgba(255,255,255,0.6);
+  --radius: 12px;
+  --shadow-1: 0 6px 18px rgba(13,27,40,0.06);
+  --shadow-2: 0 10px 30px rgba(13,27,40,0.08);
+  --maxw: 1200px;
+
+  /* Scale & typography */
+  --flow-space: 1rem;
+  --fw-regular: 400;
+  --fw-strong: 700;
+  --line: 1.45;
+  --container-padding: 24px;
+
+  /* design tokens for components */
+  --card-padding: 16px;
+  --badge-bg: rgba(var(--accent-2),0.08);
+  --btn-radius: 10px;
+  --btn-pad: 10px 14px;
+}
+
+/* Dark mode tokens */
+@media (prefers-color-scheme: dark) {
+  :root{
+    --bg: #07131a;
+    --surface: #0f1b23;
+    --muted: #98a3ad;
+    --text: #e6eef6;
+    --glass: rgba(255,255,255,0.03);
+    --shadow-1: 0 8px 30px rgba(0,0,0,0.6);
+    --shadow-2: 0 18px 60px rgba(0,0,0,0.7);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  :root{ --transition: 0s; }
+}
+
+/* Reset / modern baseline */
+*,
+*::before,
+*::after{box-sizing:border-box}
+html{block-size:100%}
+body{
+  margin:0;
+  min-block-size:100%;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  background: linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 96%, white 4%));
+  color:var(--text);
+  line-height:var(--line);
+  font-size:clamp(15px, 1.6vw, 16px);
+}
+
+/* container with container queries */
+.container{
+  width: min(96%, var(--maxw));
+  margin: 0 auto;
+  padding: var(--container-padding);
+  container-type: inline-size;
+  container-name: app;
+  isolation:isolate;
+}
+
+/* Utilities */
+.flow > * + *{ margin-top: var(--flow-space); }
+.row{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.col{flex:1 1 0}
+.stack{display:flex;flex-direction:column;gap:8px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Header */
+header{
+  background: linear-gradient(180deg, color-mix(in srgb, rgb(var(--accent)) 12%, transparent), rgba(0,0,0,0));
+  padding-block:12px;
+  backdrop-filter: blur(6px) saturate(1.05);
+  border-bottom: 1px solid rgba(8,20,26,0.04);
+  position: sticky;
+  top:0; z-index:60;
+}
+header .container{ display:flex; align-items:center; justify-content:space-between; gap:20px }
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.brand-mark{
+  width:48px;height:48px;border-radius:10px;
+  background: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent-2)));
+  box-shadow: 0 8px 26px rgba(var(--accent), .12);
+  display:inline-block;
+  flex:0 0 48px;
+}
+
+/* Navigation: accessible menu */
+nav ul{list-style:none;padding:0;margin:0;display:flex;gap:10px;align-items:center}
+nav a{color:inherit;text-decoration:none;padding:8px 10px;border-radius:8px;font-weight:600}
+nav a:focus-visible, nav a:hover{outline:none;box-shadow:0 6px 18px rgba(var(--accent),0.12);transform:translateY(-2px)}
+
+/* Hero / search */
+.hero{
+  padding-block:28px;
+}
+.hero .lead{display:flex;align-items:center;gap:20px;justify-content:space-between;flex-wrap:wrap}
+.search{
+  display:flex;gap:8px;align-items:center;background:var(--surface);padding:10px;border-radius:14px;box-shadow:var(--shadow-1);
+  border:1px solid rgba(8,17,25,0.03);width:100%;
+}
+.search input, .search select{
+  appearance:none;border:0;background:transparent;padding:10px;font-size:0.95rem;color:var(--text);min-inline-size:0;
+}
+.search .muted{color:var(--muted);font-size:0.9rem}
+.search button{border:0;background:linear-gradient(90deg, rgb(var(--accent)), rgb(var(--accent-2)));color:#fff;padding:8px 12px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 10px 26px rgba(var(--accent),0.14)}
+.search button:active{transform:translateY(1px)}
+
+/* Layout: content + sidebar using grid */
+.content-row{
+  display:grid;
+  grid-template-columns: 1fr 320px;
+  gap:28px;
+  align-items:start;
+}
+@media (max-width:980px){ .content-row{ grid-template-columns: 1fr } }
+
+/* Grid of car cards: masonry-like with dense packing */
+.car-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap:24px;
+}
+
+/* Card component */
+.car-listing{
+  background:var(--surface);
+  border-radius:var(--radius);
+  padding:var(--card-padding);
+  border:1px solid rgba(8,17,25,0.04);
+  box-shadow:var(--shadow-1);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms;
+  will-change:transform;
+  overflow:hidden;
+}
+.car-listing:hover, .car-listing:focus-within{
+  transform:translateY(-8px);
+  box-shadow:var(--shadow-2);
+}
+
+/* Image area uses aspect-ratio for consistent cropping */
+.car-media{
+  display:block;
+  width:100%;
+  aspect-ratio: 16 / 10;
+  border-radius:10px;
+  overflow:hidden;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.01));
+  display:flex;align-items:center;justify-content:center;
+}
+.car-media img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+/* Card content layout using subgrid when supported */
+.car-info{ display:flex;flex-direction:column;gap:10px; flex:1 }
+.car-title{ margin:0;font-size:clamp(1rem, 1.6vw, 1.1rem); font-weight:var(--fw-strong); color:var(--text) }
+.car-sub{ color:var(--muted); font-size:0.95rem; line-height:1.35; }
+
+/* Meta row */
+.car-meta{ display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:0.9rem;color:var(--muted) }
+.badge{
+  display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:var(--badge-bg);color:rgb(var(--accent-2));font-weight:700;font-size:0.82rem;
+}
+
+/* Price + CTA */
+.car-bottom{ display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto }
+.car-price{
+  font-size:clamp(1.05rem, 1.8vw, 1.3rem); font-weight:900;color:rgb(var(--danger)); background:linear-gradient(90deg, rgba(var(--danger),0.06), transparent); padding:8px 12px;border-radius:10px;
+}
+
+/* Buttons */
+.btn{ display:inline-flex;align-items:center;gap:8px;padding:var(--btn-pad);border-radius:var(--btn-radius);text-decoration:none;border:0;cursor:pointer;font-weight:800 }
+.btn-primary{
+  background: linear-gradient(90deg, rgb(var(--accent)) 0%, rgb(var(--accent-2)) 100%);
+  color:#fff; box-shadow: 0 12px 34px rgba(var(--accent),0.12);
+}
+.btn-primary:focus-visible{ outline: 3px solid rgba(var(--accent),0.14); outline-offset:3px }
+.btn-ghost{ background: transparent; border: 1px solid rgba(8,17,25,0.05); color:rgb(var(--accent-2)); }
+
+/* Sidebar */
+.sidebar{
+  position:relative;
+  background:var(--surface);
+  padding:18px;border-radius:14px;border:1px solid rgba(8,17,25,0.04);box-shadow:var(--shadow-1);
+  sticky: top: 96px;
+}
+.sidebar h2{ margin:0 0 12px 0;font-size:1.05rem }
+.sidebar form label{ display:block;margin-bottom:8px;font-weight:600 }
+.sidebar input, .sidebar textarea, .sidebar select{
+  width:100%;padding:10px;border-radius:8px;border:1px solid rgba(8,17,25,0.06);background:transparent;font-size:0.95rem;
+}
+.sidebar button{ width:100%; margin-top:10px }
+
+/* Gallery grid for single */
+.gallery-grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-top:12px }
+.gallery-grid img{ width:100%; height:100px; object-fit:cover; border-radius:8px; }
+
+/* Accessibility & focus */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible{
+  outline: 3px solid rgba(var(--accent),0.14); outline-offset:2px;
+}
+
+/* Responsive container query enhancements */
+@container app (min-width: 900px){
+  .car-listing{ flex-direction:row; gap:18px; align-items:flex-start }
+  .car-media{ width:46%; aspect-ratio: 4/3 }
+  .car-info{ width:54% }
+}
+
+/* Print */
+@media print{
+  header, .sidebar, .search, .btn, nav{ display:none }
+  body{ background:#fff; color:#000 }
+  .car-grid{ grid-template-columns: 1fr }
+  .car-listing{ page-break-inside: avoid; box-shadow:none; border:1px solid #ccc }
+}
+
+/* Small devices */
+@media (max-width:700px){
+  :root{ --container-padding: 14px; --card-padding: 12px; }
+  .brand-mark{ width:40px; height:40px }
+  .car-media{ aspect-ratio: 4/3; height:auto }
+  .car-price{ font-size:1rem }
+}
+
+/* Tiny helpers for developer workflow */
+.kv{ display:flex; gap:8px; align-items:center; font-weight:700 }
+.p--muted{ color:var(--muted) }
+
+/* Fallbacks for older browsers */
+@supports not (aspect-ratio: 1){
+  .car-media{ height: 190px }
+}
